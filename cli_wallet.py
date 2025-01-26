@@ -49,6 +49,7 @@ class DuinoStats:
         self.balance = 0
         self.price_usd = 0
         self.balance_usd = 0
+        self.previous_balances = []  # Lista para armazenar as últimas 10 atualizações de saldo
         
     def get_user_data(self):
         """Fetch user data from Duino-Coin API"""
@@ -87,7 +88,7 @@ class DuinoStats:
         return f"{hashrate:.2f} {units[unit_index]}"
 
     def display_miners_table(self, miners):
-        """Display miners information in a table"""
+        """Display miners information in a table without scrolling"""
         table = Table(title="Active Miners", box=box.ROUNDED)
         
         table.add_column("ID", justify="right", style="cyan")
@@ -117,6 +118,7 @@ class DuinoStats:
                 miner.get("pool", "")
             )
         
+        # Display the miners table directly without scrolling
         console.print(table)
         return total_hashrate, total_accepted, total_rejected
 
@@ -131,13 +133,25 @@ class DuinoStats:
         self.balance = user_data.get("balance", {}).get("balance", 0)
         self.balance_usd = self.balance * self.price_usd
 
+        # Adiciona o saldo atual à lista de saldos
+        self.previous_balances.append(self.balance)
+        if len(self.previous_balances) > 10:  # Mantém apenas as últimas 10 atualizações
+            self.previous_balances.pop(0)
+
+        # Cálculo de ganhos diários
+        if len(self.previous_balances) > 1:
+            daily_earnings = self.previous_balances[-1] - self.previous_balances[0]  # Diferença entre o saldo mais recente e o mais antigo
+        else:
+            daily_earnings = 0  # Se não houver saldos suficientes, ganhos diários é 0
+
         # Display user info
         console.print(Panel(
             f"[bold cyan]User:[/bold cyan] {self.username}\n"
             f"[bold green]Balance:[/bold green] {DUCO} {self.balance:.4f} (${self.balance_usd:.2f})\n"
             f"[bold yellow]DUCO Price:[/bold yellow] ${self.price_usd:.8f}\n"
             f"[bold blue]Verification:[/bold blue] {'Verified' if user_data.get('balance', {}).get('verified') == 'yes' else 'Not Verified'}\n"
-            f"[bold magenta]Trust Score:[/bold magenta] {user_data.get('balance', {}).get('trust_score', 0)}",
+            f"[bold magenta]Trust Score:[/bold magenta] {user_data.get('balance', {}).get('trust_score', 0)}\n"
+            f"[bold green]Daily Earnings:[/bold green] {DUCO} {daily_earnings:.4f} (${daily_earnings * self.price_usd:.2f})",  # Exibindo ganhos diários
             title="Duino-Coin Statistics",
             border_style="green"
         ))
@@ -177,13 +191,25 @@ def main(args):
             stats.balance = user_data.get("balance", {}).get("balance", 0)
             stats.balance_usd = stats.balance * stats.price_usd
             
+            # Adiciona o saldo atual à lista de saldos
+            stats.previous_balances.append(stats.balance)
+            if len(stats.previous_balances) > 10:  # Mantém apenas as últimas 10 atualizações
+                stats.previous_balances.pop(0)
+
+            # Cálculo de ganhos diários
+            if len(stats.previous_balances) > 1:
+                daily_earnings = stats.previous_balances[-1] - stats.previous_balances[0]  # Diferença entre o saldo mais recente e o mais antigo
+            else:
+                daily_earnings = 0  # Se não houver saldos suficientes, ganhos diários é 0
+            
             # User info panel
             content.add_row(Panel(
                 f"[bold cyan]User:[/bold cyan] {stats.username}\n"
                 f"[bold green]Balance:[/bold green] {DUCO} {stats.balance:.4f} (${stats.balance_usd:.2f})\n"
                 f"[bold yellow]DUCO Price:[/bold yellow] ${stats.price_usd:.8f}\n"
                 f"[bold blue]Verification:[/bold blue] {'Verified' if user_data.get('balance', {}).get('verified') == 'yes' else 'Not Verified'}\n"
-                f"[bold magenta]Trust Score:[/bold magenta] {user_data.get('balance', {}).get('trust_score', 0)}",
+                f"[bold magenta]Trust Score:[/bold magenta] {user_data.get('balance', {}).get('trust_score', 0)}\n"
+                f"[bold green]Daily Earnings:[/bold green] {DUCO} {daily_earnings:.4f} (${daily_earnings * stats.price_usd:.2f})",  # Exibindo ganhos diários
                 title="Duino-Coin Statistics",
                 border_style="green"
             ))
@@ -244,7 +270,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Duino-Coin CLI Monitor")
-    parser.add_argument("-i", "--interval", help="Refresh interval in seconds", type=int, default=5)
+    parser.add_argument("-i", "--interval", help="Refresh interval in seconds", type=int, default=60) # default 60 seconds
     parser.add_argument("--reset", help="Reset saved username", action="store_true")
     args = parser.parse_args()
 
