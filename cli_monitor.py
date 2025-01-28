@@ -11,6 +11,8 @@ from rich.live import Live
 from rich.panel import Panel
 from rich import box
 import os
+import subprocess
+import sys
 
 DUCO = "ᕲ"
 DUCO_REST_API = "https://server.duinocoin.com"
@@ -171,7 +173,32 @@ class DuinoStats:
                 border_style="blue"
             ))
 
+def check_and_install_dependencies():
+    """Verifica e instala as dependências necessárias"""
+    REQUIREMENTS = [
+        "requests>=2.31.0",
+        "rich>=13.4.2"
+    ]
+    
+    console.print("[yellow]Verificando e instalando dependências...[/yellow]")
+    
+    for package in REQUIREMENTS:
+        package_name = package.split('>=')[0]
+        try:
+            __import__(package_name)
+            console.print(f"[green][✓] {package_name} já está instalado[/green]")
+        except ImportError:
+            console.print(f"[yellow][!] {package_name} não encontrado, instalando...[/yellow]")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+            console.print(f"[green][✓] {package_name} instalado com sucesso[/green]")
+
 def main(args):
+    # Verificar e instalar dependências antes de iniciar
+    check_and_install_dependencies()
+    
+    # Clear terminal on startup
+    os.system('cls' if os.name == 'nt' else 'clear')
+    
     username = load_or_create_username()
     stats = DuinoStats(username)
     
@@ -272,7 +299,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Duino-Coin CLI Monitor")
     parser.add_argument("-i", "--interval", help="Refresh interval in seconds", type=int, default=60) # default 60 seconds
     parser.add_argument("--reset", help="Reset saved username", action="store_true")
+    parser.add_argument("--install-deps", help="Install dependencies and exit", action="store_true")
     args = parser.parse_args()
+
+    if args.install_deps:
+        check_and_install_dependencies()
+        sys.exit(0)
 
     if args.reset and os.path.exists(CONFIG_FILE):
         os.remove(CONFIG_FILE)
