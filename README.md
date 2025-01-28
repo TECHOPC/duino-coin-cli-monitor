@@ -53,7 +53,7 @@ Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
 
 ## Contato
 
-Seu Nome - [@seu_twitter](https://twitter.com/seu_twitter) - seu.email@example.com
+TECHO_PC ( Meketreve )
 
 Link do Projeto: [https://github.com/seu-usuario/duino-cli-monitor](https://github.com/seu-usuario/duino-cli-monitor)
 
@@ -123,6 +123,6 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-Your Name - [@your_twitter](https://twitter.com/your_twitter) - your.email@example.com
+TECHO_PC ( Meketreve )
 
 Project Link: [https://github.com/your-username/duino-cli-monitor](https://github.com/your-username/duino-cli-monitor)
