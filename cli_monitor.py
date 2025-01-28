@@ -175,6 +175,9 @@ def main(args):
     username = load_or_create_username()
     stats = DuinoStats(username)
     
+    # Clear terminal
+    os.system('clear || cls')
+
     console.print("[bold green]Starting Duino-Coin Monitor...[/bold green]")
     
     def generate_content():
